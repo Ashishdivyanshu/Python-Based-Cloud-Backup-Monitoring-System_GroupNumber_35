@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>BackupGuard · Cloud Backup Monitoring</title>
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#0b0d10;--surface:#13161b;--surface-2:#191d24;--surface-3:#222731;
+  --ink:#f3f5f8;--mute:#a0a8b5;--subtle:#6e7785;--line:#2a303a;--line-soft:#20252d;
+  --brand:#a78bfa;--brand-strong:#8b5cf6;--brand-soft:#261d3b;
+  --ok:#4ade80;--okbg:#10291d;--warn:#fbbf24;--warnbg:#30250e;--bad:#fb7185;--badbg:#321820;
+  --code:#0e1116;--radius:10px;--shadow:0 20px 70px #0005;
+}
+*{box-sizing:border-box}
+html{min-width:320px;scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:.005em}
+button,input,textarea{font:inherit}
+button{touch-action:manipulation}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+header{position:sticky;top:0;z-index:5;background:#0b0d10ed;border-bottom:1px solid var(--line);backdrop-filter:blur(14px)}
+.wrap{width:min(1240px,100%);margin:0 auto;padding:0 28px}
+.top{min-height:76px;display:flex;align-items:center;gap:28px;flex-wrap:wrap;padding-top:12px;padding-bottom:12px}
+.brand-lockup{display:flex;align-items:center;gap:12px;min-width:max-content}
+.brand-mark{display:grid;place-items:center;width:38px;height:38px;border:1px solid #7c64cf66;border-radius:10px;background:var(--brand-soft);color:#c4b5fd;font-size:18px;font-weight:800;letter-spacing:-.08em}
+.logo{font-size:17px;line-height:1.2;font-weight:750;letter-spacing:-.5px}.logo i{font-style:normal;color:var(--brand)}
+.sub{color:var(--mute);font-size:12px;line-height:1.55}
+.brand-copy .sub{margin-top:4px;color:var(--subtle);font-size:11px}
+nav{display:flex;align-items:center;gap:5px;margin-left:auto;flex-wrap:wrap}
+nav button{display:inline-flex;align-items:center;gap:8px;background:transparent;border:1px solid transparent;padding:9px 12px;border-radius:7px;color:var(--mute);font-weight:550;cursor:pointer;transition:background .16s ease,color .16s ease,border-color .16s ease}
+nav button:hover{background:var(--surface-2);color:var(--ink)}
+nav button.on{background:var(--surface-2);border-color:var(--line);color:var(--ink)}
+nav button.on::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--brand);box-shadow:0 0 0 3px #a78bfa18}
+main{padding-top:34px;padding-bottom:72px}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:22px;margin-bottom:24px;flex-wrap:wrap}
+.eyebrow{margin:0 0 8px;color:var(--brand);font-size:10px;font-weight:750;letter-spacing:.13em;text-transform:uppercase}
+h1{margin:0;font-size:clamp(25px,3vw,34px);line-height:1.16;letter-spacing:-1.1px;font-weight:650}
+h2{margin:0 0 6px;font-size:18px;line-height:1.3;letter-spacing:-.35px;font-weight:650}
+h3{margin:0 0 12px;font-size:14px;line-height:1.4;font-weight:650}
+p{color:var(--mute);margin:12px 0;line-height:1.7}
+.pane{display:none;animation:appear .18s ease-out}.pane.on{display:block}
+@keyframes appear{from{opacity:.6;transform:translateY(3px)}to{opacity:1;transform:none}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:16px;min-width:0}
+.card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:14px}
+.card-head h2,.card-head h3{margin-bottom:4px}
+.card-head .sub{max-width:740px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:16px}
+.stat-card{position:relative;overflow:hidden;min-height:132px;margin:0;padding:18px}
+.stat-card::after{content:"";position:absolute;right:-20px;top:-28px;width:86px;height:86px;border:1px solid var(--line-soft);border-radius:50%;box-shadow:0 0 0 12px #ffffff03,0 0 0 25px #ffffff02;pointer-events:none}
+.stat-label{display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--mute);font-size:12px;font-weight:550}
+.stat-icon{display:grid;place-items:center;width:28px;height:28px;border-radius:7px;background:var(--surface-2);color:var(--brand);font-size:14px}
+.stat{display:block;margin-top:14px;font-size:30px;font-weight:650;line-height:1.1;letter-spacing:-1px;font-variant-numeric:tabular-nums}
+.stat-foot{margin-top:8px;color:var(--subtle);font-size:11px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:38px;border:1px solid transparent;border-radius:7px;background:#e9e5ff;color:#21183e;padding:9px 14px;font-weight:700;cursor:pointer;transition:transform .12s ease,background .12s ease,border-color .12s ease;white-space:nowrap}
+.btn:hover{background:#d7ccff}.btn:active{transform:translateY(1px)}
+.btn.ghost{background:var(--surface-2);color:var(--ink);border-color:var(--line)}.btn.ghost:hover{background:var(--surface-3)}
+.btn.danger{background:#57212b;color:#fecdd3;border-color:#78303f}.btn.danger:hover{background:#6b2634}
+.btn.sm{min-height:30px;padding:5px 9px;font-size:12px}.btn:disabled{opacity:.55;cursor:wait;transform:none}
+.btn .btn-icon{font-size:16px;line-height:1}
+.panel-grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(300px,.8fr);gap:16px;align-items:start}
+.panel-grid .card{height:100%}
+.status-banner{display:flex;align-items:flex-start;gap:12px;border:1px solid var(--line);border-radius:9px;padding:15px 17px;margin-bottom:16px;background:var(--surface)}
+.status-dot{flex:none;width:9px;height:9px;border-radius:50%;margin-top:6px;background:var(--subtle);box-shadow:0 0 0 4px #ffffff08}
+.status-banner.ok{border-color:#245b3b;background:linear-gradient(100deg,#10271b,var(--surface) 72%)}.status-banner.ok .status-dot{background:var(--ok);box-shadow:0 0 0 4px #4ade801c}
+.status-banner.warn{border-color:#66501e;background:linear-gradient(100deg,#2a210f,var(--surface) 72%)}.status-banner.warn .status-dot{background:var(--warn);box-shadow:0 0 0 4px #fbbf241a}
+.status-title{font-weight:650;font-size:13px}.status-detail{font-size:12px;color:var(--mute);margin-top:3px}
+.pill{display:inline-flex;align-items:center;gap:6px;max-width:100%;width:max-content;padding:3px 8px;border:1px solid var(--line);border-radius:5px;background:var(--surface-2);color:var(--mute);font-size:10px;line-height:1.35;font-weight:750;letter-spacing:.04em;white-space:nowrap}
+.pill::before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor;flex:none}
+.pill.ok{background:var(--okbg);border-color:#225839;color:var(--ok)}.pill.warn{background:var(--warnbg);border-color:#5a4519;color:var(--warn)}.pill.bad{background:var(--badbg);border-color:#60303a;color:var(--bad)}
+.section-title{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.section-title h3{margin:0}
+.table-card{padding:0;overflow:hidden}.table-head{padding:20px 20px 4px}
+.tbl{overflow:auto;width:100%}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px;white-space:normal}
+th,td{text-align:left;padding:12px 15px;border-bottom:1px solid var(--line-soft);vertical-align:middle}
+th{position:sticky;top:0;background:var(--surface);color:var(--subtle);font-size:10px;font-weight:750;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}tbody tr{transition:background .1s ease}tbody tr:hover{background:#ffffff03}
+td:first-child,th:first-child{padding-left:20px}td:last-child,th:last-child{padding-right:20px}
+.file-name{font-weight:600;color:var(--ink)}.file-meta{display:block;color:var(--subtle);font-size:11px;margin-top:3px}
+.hash,code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;background:var(--code);border:1px solid var(--line-soft);border-radius:5px;padding:4px 6px;color:#c4b5fd;word-break:break-all}
+.hash{display:inline-block;max-width:280px}pre{font:12px/1.7 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--code);border:1px solid var(--line-soft);border-radius:8px;color:#cbd5e1;padding:16px;max-height:520px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;margin:0}
+.flow{display:flex;gap:7px;flex-wrap:wrap;align-items:center;font-size:11px;font-weight:600;color:var(--mute);margin-top:14px}.flow span{display:inline-flex;align-items:center;gap:7px;background:var(--surface-2);border:1px solid var(--line-soft);padding:6px 9px;border-radius:5px}.flow span::before{content:"";width:5px;height:5px;border-radius:2px;background:var(--brand)}.flow b{color:var(--subtle);font-weight:500}
+.empty-state{padding:32px 20px;text-align:center;color:var(--mute);font-size:13px}.empty-icon{display:grid;place-items:center;width:36px;height:36px;margin:0 auto 10px;border-radius:10px;background:var(--surface-2);color:var(--brand);font-size:18px}.empty-state strong{display:block;color:var(--ink);margin-bottom:4px;font-size:13px}
+.alert-list{display:grid;gap:9px}.alert-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line-soft)}.alert-item:last-child{border-bottom:0}.alert-file{font-weight:600;font-size:12px;overflow-wrap:anywhere}
+.location{display:flex;align-items:center;gap:7px;margin-top:10px;overflow-wrap:anywhere;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--mute)}
+.about-list{display:grid;gap:10px;list-style:none;margin:12px 0 20px;padding:0}.about-list li{display:flex;gap:10px;color:var(--mute);font-size:13px;line-height:1.6}.about-list li::before{content:"✓";color:var(--ok);font-weight:800}.about-list.limitations li::before{content:"!";color:var(--warn)}
+#toast{position:fixed;z-index:20;right:24px;bottom:24px;max-width:min(440px,calc(100vw - 32px));background:#f3f0ff;color:#21183e;border:1px solid #b9a8ff;padding:12px 16px;border-radius:8px;box-shadow:var(--shadow);opacity:0;transform:translateY(8px);transition:opacity .18s ease,transform .18s ease;pointer-events:none;font-weight:650;font-size:13px}
+#toast.on{opacity:1;transform:translateY(0)}
+dialog{border:1px solid #3a4050;border-radius:12px;background:var(--surface);color:var(--ink);width:min(540px,calc(100vw - 28px));padding:0;box-shadow:var(--shadow)}dialog::backdrop{background:#020407c9;backdrop-filter:blur(4px)}
+.dialog-head{padding:22px 24px 15px;border-bottom:1px solid var(--line)}.dialog-body{padding:20px 24px 24px}.dialog-head h3{font-size:17px;margin-bottom:4px}.dialog-copy{font-size:12px;color:var(--mute)}
+.field{margin-bottom:16px}.field:last-of-type{margin-bottom:20px}
+input,textarea{display:block;width:100%;background:#0d1015;color:var(--ink);border:1px solid #333a46;border-radius:7px;padding:10px 12px;transition:border-color .15s ease,box-shadow .15s ease}
+input::placeholder,textarea::placeholder{color:#687180}input:focus,textarea:focus{border-color:#8b72da;box-shadow:0 0 0 3px #a78bfa1a;outline:0}textarea{resize:vertical;min-height:130px}
+label{display:block;color:#cbd0d9;font-size:12px;font-weight:650;margin-bottom:7px}.required-note{font-size:11px;color:var(--subtle);font-weight:400;margin-left:4px}
+.dialog-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:4px}
+@media(max-width:960px){.top{gap:16px}.brand-lockup{flex:1}nav{width:100%;margin:0;padding-top:4px;border-top:1px solid var(--line-soft)}nav button{flex:1;justify-content:center;padding:9px 7px;font-size:12px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.panel-grid{grid-template-columns:1fr}}
+@media(max-width:600px){.wrap{padding-left:16px;padding-right:16px}.top{padding-top:12px;padding-bottom:10px}.brand-mark{width:34px;height:34px}.brand-copy .sub{max-width:220px}nav{overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px}nav button{flex:0 0 auto;font-size:12px}main{padding-top:24px}.page-head{align-items:flex-start;margin-bottom:18px}.page-head .btn{width:100%}.grid{gap:9px}.stat-card{padding:13px;min-height:122px}.stat{font-size:25px}.stat-label{font-size:11px;align-items:flex-start}.stat-icon{width:24px;height:24px}.card{padding:15px}.table-card{padding:0}.table-head{padding:16px 15px 4px}th,td{padding:11px 12px}td:first-child,th:first-child{padding-left:15px}td:last-child,th:last-child{padding-right:15px}.flow{gap:5px}.flow span{padding:5px 7px}.flow b{display:none}.status-banner{padding:13px}.dialog-head,.dialog-body{padding-left:17px;padding-right:17px}#toast{right:16px;bottom:16px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
+/* Premium dark visual system — infrastructure console, not a generic dashboard. */
+:root{color-scheme:dark;--bg:#080a0f;--surface:#10141c;--surface-2:#151b26;--surface-3:#1c2533;--ink:#f3f6fc;--mute:#a0aec0;--subtle:#69778b;--line:#263142;--line-soft:#1c2532;--brand:#a78bfa;--brand-strong:#8b5cf6;--brand-soft:#241b3a;--ok:#4ade80;--okbg:#0d291c;--warn:#fbbf24;--warnbg:#30240d;--bad:#fb7185;--badbg:#321720;--code:#090d14;--radius:14px;--shadow:0 24px 80px #0008}
+html{background:var(--bg)}body{background:radial-gradient(ellipse at 80% -15%,#28204a35,transparent 34%),radial-gradient(ellipse at 0% 20%,#122d3a20,transparent 32%),var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:0}
+header{background:#080a0fe8;border-bottom:1px solid #252d3b;backdrop-filter:blur(22px);box-shadow:0 8px 28px #0002}
+.wrap{width:min(1440px,100%);padding-left:36px;padding-right:36px}.top{min-height:80px;gap:28px}.brand-lockup{gap:13px}.brand-mark{width:42px;height:42px;border:1px solid #a78bfa55;border-radius:13px;background:linear-gradient(145deg,#8b5cf6,#43316f 75%,#172032);color:#fff;box-shadow:0 0 28px #8b5cf626,inset 0 1px #ffffff28;font-size:15px}.logo{font-size:19px;letter-spacing:-.7px}.logo i{color:#b7a3ff}.brand-copy .sub{color:#78859a;font-size:11px}
+nav{gap:4px}nav button{padding:10px 13px;border-radius:9px;color:#8c98aa;font-size:12px;font-weight:650}nav button:hover{background:#171d29;color:#f5f7fc}nav button.on{background:linear-gradient(180deg,#211a35,#171522);border-color:#46376a;color:#e8ddff;box-shadow:inset 0 1px #ffffff08}nav button.on::before{background:#b7a3ff;box-shadow:0 0 0 3px #a78bfa1c,0 0 12px #a78bfa80}
+main{padding-top:42px;padding-bottom:88px}.page-head{margin-bottom:27px;align-items:center}.eyebrow{color:#b7a3ff;font-size:10px;letter-spacing:.18em;margin-bottom:11px}h1{font-size:clamp(28px,3vw,39px);line-height:1.08;letter-spacing:-1.5px;font-weight:720}h2{font-size:18px;letter-spacing:-.45px}h3{font-size:13px;letter-spacing:.015em}.sub{color:#8491a4;font-size:12px}
+.card{position:relative;background:linear-gradient(145deg,#121722,#0f131b 80%);border:1px solid #283243;border-radius:15px;padding:22px;margin-bottom:17px;box-shadow:0 12px 32px #00000016,inset 0 1px #ffffff04}.card-head{margin-bottom:17px}.grid{gap:15px}.stat-card{min-height:145px;padding:21px;border-radius:15px;box-shadow:0 12px 32px #0002,inset 0 1px #ffffff06}.stat-card::after{border-color:#a78bfa1c;box-shadow:0 0 0 12px #a78bfa04,0 0 0 25px #a78bfa02}.stat-label{color:#a1adbf;font-size:12px;font-weight:600}.stat-icon{width:33px;height:33px;border-radius:10px;background:#241d38;border:1px solid #47366a;color:#c4b5fd;font-size:15px}.stat{font-size:34px;color:#f4f6fc;letter-spacing:-1.4px}.stat-foot{color:#758297;font-size:11px}
+.btn{min-height:42px;border-radius:9px;background:linear-gradient(135deg,#a78bfa,#8057df);color:#100d19;padding:10px 16px;font-size:12px;font-weight:800;box-shadow:0 6px 20px #8b5cf629,inset 0 1px #ffffff55}.btn:hover{background:linear-gradient(135deg,#c4b5fd,#9b7af3);box-shadow:0 8px 26px #8b5cf63b}.btn:active{transform:translateY(1px)}.btn.ghost{background:#171e2a;color:#dce4f1;border-color:#303b4d;box-shadow:none}.btn.ghost:hover{background:#202a39;border-color:#46546b}.btn.danger{background:#351923;color:#ffb8c4;border-color:#69303e;box-shadow:none}.btn.danger:hover{background:#48202d}.btn.sm{min-height:31px;border-radius:7px;padding:6px 10px}
+.panel-grid{gap:17px}.status-banner{border-color:#2b3545;border-radius:13px;padding:18px 20px;background:linear-gradient(110deg,#141a26,#10141c 70%);box-shadow:0 8px 24px #0002}.status-banner.ok{border-color:#1f6040;background:linear-gradient(110deg,#0c291c,#10171a 74%)}.status-banner.warn{border-color:#6a501b;background:linear-gradient(110deg,#2b210d,#171610 74%)}.status-dot{background:#738196;box-shadow:0 0 0 4px #73819618}.status-banner.ok .status-dot{background:#4ade80;box-shadow:0 0 0 4px #4ade801a,0 0 14px #4ade8060}.status-banner.warn .status-dot{background:#fbbf24;box-shadow:0 0 0 4px #fbbf2418,0 0 14px #fbbf2440}.status-title{font-size:13px;color:#f0f4fb}.status-detail{color:#a0aec0;font-size:12px}
+.pill{border-radius:6px;background:#171e29;border-color:#303b4d;color:#a7b2c3;font-size:10px;letter-spacing:.045em;padding:4px 8px}.pill.ok{background:#0c291c;border-color:#205d3e;color:#61e994}.pill.warn{background:#30240d;border-color:#654d1a;color:#facc54}.pill.bad{background:#321720;border-color:#66303c;color:#ff8da1}
+.table-card{padding:0;border-radius:15px}.table-head{padding:22px 22px 5px}.section-title{margin-bottom:13px}table{font-size:12px}th,td{padding:14px 15px;border-bottom-color:#202a38}th{background:#121722;color:#758398;font-size:10px;letter-spacing:.1em}tbody tr:hover{background:#ffffff05}td:first-child,th:first-child{padding-left:22px}td:last-child,th:last-child{padding-right:22px}.file-name{color:#e8edf6;font-weight:650}.file-meta{color:#718096}.hash,code{background:#090d14;border-color:#263142;color:#c4b5fd;border-radius:6px}.hash{max-width:280px}pre{background:#090d14;border:1px solid #263142;color:#cbd7e8;border-radius:11px;padding:18px}
+.flow{gap:8px;color:#9aa7ba}.flow span{background:#151c27;border-color:#283345;border-radius:7px;padding:7px 10px}.flow span::before{background:#a78bfa;border-radius:50%;box-shadow:0 0 8px #a78bfa55}.flow b{color:#58677c}.empty-state{color:#8794a7;padding:38px 20px}.empty-state strong{color:#e8edf6}.empty-icon{background:#211b34;border:1px solid #3c2e5d;color:#c4b5fd;border-radius:11px}.alert-item{border-bottom-color:#202a38}.alert-file{color:#e0e7f1}.location{color:#9aa7ba}
+#toast{background:#e9ddff;color:#1b1230;border:1px solid #b7a3ff;border-radius:10px;box-shadow:0 15px 40px #0007}dialog{border:1px solid #354155;border-radius:16px;background:#111722;color:#f3f6fc}dialog::backdrop{background:rgba(1,3,8,.78);backdrop-filter:blur(7px)}.dialog-head{border-bottom-color:#273243}.dialog-head h3{color:#f3f6fc}.dialog-copy{color:#95a2b5}.dialog-body{padding-top:22px}.field{margin-bottom:17px}input,textarea{background:#0b1018;color:#edf2fa;border-color:#303c4e;border-radius:9px;padding:12px 13px}input::placeholder,textarea::placeholder{color:#657286}input:focus,textarea:focus{border-color:#a78bfa;box-shadow:0 0 0 4px #a78bfa1b}label{color:#cbd5e1;font-size:12px}.required-note{color:#78869a}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #a78bfa;outline-offset:3px}
+@media(max-width:960px){.wrap{padding-left:24px;padding-right:24px}.top{gap:16px}}
+@media(max-width:600px){.wrap{padding-left:16px;padding-right:16px}.top{padding-top:12px;padding-bottom:10px}.brand-mark{width:36px;height:36px}main{padding-top:27px}.page-head{margin-bottom:20px}.stat-card{padding:14px;border-radius:12px}.card{padding:16px;border-radius:12px}.table-card{padding:0}.table-head{padding:17px 16px 4px}.status-banner{padding:14px}.dialog-head,.dialog-body{padding-left:17px;padding-right:17px}}
+
+.header-status{display:flex;align-items:center;gap:8px;white-space:nowrap;border:1px solid #263345;background:#111722;border-radius:8px;padding:8px 10px;color:#7f8da1;font-size:9px;font-weight:800;letter-spacing:.11em}.header-status b{color:#63e995;font-size:9px}.live-dot,.runtime-strip i{width:6px;height:6px;display:inline-block;border-radius:50%;background:#4ade80;box-shadow:0 0 10px #4ade8070}.runtime-strip{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:-7px 0 16px;padding:10px 12px;border:1px solid #222d3c;border-radius:9px;background:#0d121a;color:#7f8da1;font:750 9px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.07em}.runtime-strip span:first-child{display:flex;align-items:center;gap:7px;color:#aab6c8}.runtime-sep{color:#39465a}.runtime-clock{margin-left:auto;color:#8f9bb0}@media(max-width:960px){.header-status{margin-left:auto}nav{width:100%}}@media(max-width:600px){.header-status{padding:7px 8px;font-size:8px}.runtime-strip{gap:7px;font-size:8px}.runtime-clock{width:100%;margin-left:13px}}
+
+
+/* Refined security-console shell */
+header{height:76px;position:sticky;top:0;z-index:8}.top{width:100%;max-width:none;padding:0 30px 0 28px;min-height:76px}.top-status{margin-left:auto}
+.app-layout{min-height:calc(100vh - 76px)}.sidebar{position:fixed;z-index:7;top:76px;bottom:0;left:0;width:252px;display:flex;flex-direction:column;padding:22px 14px 15px;background:linear-gradient(180deg,#0d1119,#0a0d13);border-right:1px solid #222c3b;overflow-y:auto}
+.side-workspace{display:flex;align-items:center;gap:10px;padding:10px 10px 20px;margin-bottom:17px;border-bottom:1px solid #202938}.workspace-icon{display:grid;place-items:center;width:35px;height:35px;border:1px solid #4d3a78;border-radius:10px;background:linear-gradient(145deg,#30224c,#171927);color:#d9ccff;font-size:12px;font-weight:850}.side-workspace strong,.sidebar-bottom strong{display:block;color:#e8edf7;font-size:12px;letter-spacing:-.1px}.side-workspace small,.sidebar-bottom small{display:block;margin-top:3px;color:#6f7e93;font-size:9px;letter-spacing:.11em}.workspace-chevron{margin-left:auto;color:#728096}.side-label{padding:0 11px 8px;color:#58677d;font-size:9px;font-weight:850;letter-spacing:.16em}.side-label-gap{padding-top:25px}#nav{display:grid;gap:5px;margin:0;flex-wrap:nowrap;width:100%}#nav button{position:relative;width:100%;min-height:42px;display:flex;align-items:center;gap:12px;padding:10px 11px;border:1px solid transparent;border-radius:9px;background:transparent;color:#8e9bb0;text-align:left;font-size:12px;font-weight:620;white-space:nowrap}#nav button:hover{background:#151c28;color:#e5eaf4}#nav button.on{color:#e6dcff;border-color:#382c55;background:linear-gradient(100deg,#211a33,#151721);box-shadow:inset 3px 0 #a78bfa,inset 0 1px #ffffff05}#nav button.on::before{display:none}.nav-ico{display:grid;place-items:center;width:20px;color:#7f8da3;font-size:16px}#nav button.on .nav-ico{color:#bba8ff}.nav-tail{margin-left:auto;color:#b7a3ff}.sidebar-bottom{display:flex;align-items:center;gap:10px;margin-top:auto;padding:13px 10px;border:1px solid #263142;border-radius:11px;background:linear-gradient(120deg,#121923,#0f141d)}.sidebar-bottom small{letter-spacing:0;font-size:10px}.sidebar-bottom .live-dot{margin-left:auto;flex:none}.secure-mark{display:grid;place-items:center;width:29px;height:29px;border-radius:8px;background:#102a1e;border:1px solid #20543a;color:#5fe99a}
+main.wrap{width:auto;max-width:none;margin-left:252px;padding:38px clamp(22px,3vw,48px) 80px}.page-head{margin-bottom:24px}.page-head h1{font-size:clamp(27px,2.7vw,37px)}.eyebrow{display:flex;align-items:center;gap:9px}.eyebrow:before{content:"";width:17px;height:1px;background:#a78bfa;box-shadow:0 0 8px #a78bfa80}.runtime-strip{margin-top:-3px;margin-bottom:17px;padding:11px 14px}.insight-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(280px,.85fr);gap:16px;margin-bottom:17px}.insight-card{min-height:270px;margin-bottom:0;padding:21px}.insight-card .card-head{align-items:flex-start;margin-bottom:20px}.mini-kicker{margin-bottom:7px;color:#8e9ab0;font-size:9px;font-weight:850;letter-spacing:.15em}.insight-card h2{margin-bottom:5px;font-size:16px}.chart-chip{display:inline-flex;align-items:center;gap:7px;padding:6px 8px;border:1px solid #293548;border-radius:7px;background:#101722;color:#8d9bb0;font-size:8px;font-weight:850;letter-spacing:.09em;white-space:nowrap}.chart-chip i{width:5px;height:5px;border-radius:50%;background:#a78bfa;box-shadow:0 0 9px #a78bfa}.health-chart{display:grid;gap:17px;min-height:91px}.health-row{display:grid;grid-template-columns:112px minmax(0,1fr) 34px;align-items:center;gap:12px}.health-label{color:#a9b4c5;font-size:11px}.health-track,.fresh-track{height:8px;overflow:hidden;border-radius:20px;background:#202938;box-shadow:inset 0 1px 2px #0008}.health-fill{height:100%;border-radius:20px;min-width:0;transition:width .35s ease}.health-value{color:#e0e7f2;text-align:right;font:700 11px ui-monospace,monospace}.chart-legend{display:flex;flex-wrap:wrap;gap:17px;margin-top:22px;padding-top:15px;border-top:1px solid #202a38}.chart-legend span{display:flex;align-items:center;gap:7px;color:#8290a4;font-size:10px}.chart-legend i{width:7px;height:7px;border-radius:2px}.legend-ok{background:#4ade80}.legend-warn{background:#fbbf24}.legend-bad{background:#fb7185}.chart-symbol{display:grid;place-items:center;width:34px;height:34px;border:1px solid #40345f;border-radius:10px;background:#211a34;color:#c6b4ff;font-size:17px}.freshness-chart{display:grid;gap:15px}.fresh-row{display:grid;gap:7px}.fresh-meta{display:flex;justify-content:space-between;gap:10px;font-size:11px}.fresh-meta span:first-child{color:#b1bdce;overflow-wrap:anywhere}.fresh-meta strong{color:#e6ebf4;font:650 10px ui-monospace,monospace;white-space:nowrap}.fresh-track{height:6px}.fresh-fill{height:100%;border-radius:20px;background:linear-gradient(90deg,#8b5cf6,#b7a3ff)}.fresh-fill.warn{background:linear-gradient(90deg,#b7791f,#fbbf24)}.fresh-fill.bad{background:linear-gradient(90deg,#be3859,#fb7185)}.chart-footnote{display:flex;justify-content:space-between;gap:10px;margin-top:20px;padding-top:13px;border-top:1px solid #202a38;color:#7f8da1;font-size:10px}.chart-footnote strong{color:#c6b5ff;font:700 10px ui-monospace,monospace}.chart-empty{padding:20px 8px;color:#748196;font-size:11px;text-align:center;border:1px dashed #283447;border-radius:9px}
+@media(max-width:1100px){.sidebar{width:220px}main.wrap{margin-left:220px;padding-left:24px;padding-right:24px}.insight-grid{grid-template-columns:1fr}.insight-card{min-height:0}}
+@media(max-width:760px){header{height:auto;position:relative}.top{min-height:68px;padding:10px 16px}.top-status{display:none}.app-layout{min-height:0}.sidebar{position:sticky;top:0;width:100%;height:auto;bottom:auto;padding:10px 12px;background:#0b0e14;border-right:0;border-bottom:1px solid #263142;overflow:visible}.side-workspace,.side-label,.sidebar-bottom{display:none}#nav{display:flex;gap:5px;overflow-x:auto;padding-bottom:2px}#nav button{width:auto;flex:0 0 auto;min-height:38px;padding:8px 11px;font-size:11px}#nav button.on{box-shadow:inset 0 -2px #a78bfa}#nav button.on::before{display:none}.nav-ico{width:auto;font-size:14px}.side-label-gap{display:none}main.wrap{margin-left:0;padding:26px 16px 60px}.insight-grid{grid-template-columns:1fr}.health-row{grid-template-columns:94px minmax(0,1fr) 30px}.runtime-clock{width:auto;margin-left:auto}}
+@media(max-width:460px){.health-row{grid-template-columns:82px minmax(0,1fr) 27px;gap:8px}.chart-chip{font-size:7px}.insight-card{padding:16px}.chart-legend{gap:10px}.chart-legend span{font-size:9px}.page-head .btn{width:100%}}
+
+</style>
+</head>
+<body>
+<header><div class="wrap top">
+  <div class="brand-lockup"><div class="brand-mark" aria-hidden="true">BG</div><div class="brand-copy"><div class="logo">Backup<i>Guard</i></div><div class="sub">Cloud backup monitoring <span aria-hidden="true">·</span> CSET 462</div></div></div>
+  <div class="header-status top-status" aria-label="Local monitoring service status"><span class="live-dot"></span><span>LOCAL ENGINE</span><b>ONLINE</b></div>
+</div></header>
+<div class="app-layout">
+<aside class="sidebar" aria-label="Workspace navigation">
+  <div class="side-workspace"><span class="workspace-icon">BG</span><span><strong>BackupGuard</strong><small>SECURITY WORKSPACE</small></span><span class="workspace-chevron">⌄</span></div>
+  <div class="side-label">MONITORING</div>
+  <nav id="nav" aria-label="Main navigation">
+    <button data-p="dash" class="on" aria-current="page"><span class="nav-ico">◫</span>Overview<span class="nav-tail">↗</span></button>
+    <button data-p="back"><span class="nav-ico">▤</span>Backup storage</button>
+    <button data-p="base"><span class="nav-ico">◈</span>Integrity baseline</button>
+    <div class="side-label side-label-gap">SECURITY</div>
+    <button data-p="audit"><span class="nav-ico">≋</span>Audit trail</button>
+    <button data-p="log"><span class="nav-ico">⌁</span>Security logs</button>
+    <div class="side-label side-label-gap">SYSTEM</div>
+    <button data-p="about"><span class="nav-ico">ⓘ</span>About project</button>
+  </nav>
+  <div class="sidebar-bottom"><div class="secure-mark">✳</div><div><strong>Local environment</strong><small>Simulated cloud storage</small></div><span class="live-dot"></span></div>
+</aside>
+<main class="wrap">
+<section class="pane on" id="dash" aria-labelledby="dashTitle">
+  <div class="page-head"><div><p class="eyebrow">System overview / Backup monitoring</p><h1 id="dashTitle">Monitoring overview</h1><div class="sub" style="margin-top:8px">Review availability, freshness, and file integrity from one place.</div></div><button class="btn" id="runBtn"><span class="btn-icon" aria-hidden="true">↻</span> Run monitoring</button></div>
+  <div class="runtime-strip"><span><i></i> SIMULATED CLOUD STORAGE</span><span class="runtime-sep">/</span><span>SHA-256 INTEGRITY</span><span class="runtime-sep">/</span><span>24H FRESHNESS POLICY</span><span class="runtime-clock" id="runtimeClock">LOCAL TIME —</span></div>
+  <div id="banner" class="status-banner" role="status" aria-live="polite"><span class="status-dot" aria-hidden="true"></span><div><div class="status-title">Waiting for first monitoring run</div><div class="status-detail">Run the checks to get the latest backup health report.</div></div></div>
+  <div class="grid" id="stats" aria-live="polite"></div>
+  <div class="insight-grid">
+    <div class="card insight-card"><div class="card-head"><div><div class="mini-kicker">LATEST MONITORING RUN</div><h2>Control check distribution</h2><div class="sub">Availability, freshness and integrity checks in the latest report.</div></div><span class="chart-chip"><i></i> CURRENT SNAPSHOT</span></div><div id="healthChart" class="health-chart"><div class="chart-empty">Run monitoring to visualize check results.</div></div><div class="chart-legend"><span><i class="legend-ok"></i>Passing</span><span><i class="legend-warn"></i>Warning</span><span><i class="legend-bad"></i>Needs attention</span></div></div>
+    <div class="card insight-card freshness-card"><div class="card-head"><div><div class="mini-kicker">BACKUP FRESHNESS</div><h2>Age against policy</h2><div class="sub">File age compared with the configured maximum.</div></div><span class="chart-symbol">◷</span></div><div id="freshnessChart" class="freshness-chart"><div class="chart-empty">Freshness data appears after a monitoring run.</div></div><div class="chart-footnote">Policy threshold <strong id="chartMaxAge">—</strong></div></div>
+  </div>
+  <div class="panel-grid">
+    <div class="card table-card"><div class="table-head"><div class="section-title"><h3>Backup check results</h3><span class="sub">Latest reported status</span></div></div><div class="tbl"><table id="resTbl"><thead><tr><th>Backup</th><th>Availability</th><th>Freshness</th><th>Age</th><th>Integrity</th></tr></thead><tbody><tr><td colspan="5"><div class="empty-state"><div class="empty-icon" aria-hidden="true">⌁</div><strong>No report yet</strong>Run monitoring to populate backup results.</div></td></tr></tbody></table></div></div>
+    <div class="card"><div class="section-title"><h3>Detected issues</h3><span id="alertCount" class="pill">Awaiting report</span></div><div id="alerts" class="sub">Issues found during monitoring will appear here.</div><div style="border-top:1px solid var(--line-soft);margin-top:18px;padding-top:16px"><div class="sub" style="margin-bottom:10px">Monitoring pipeline</div><div class="flow"><span>Storage</span><b>→</b><span>Verify</span><b>→</b><span>Alert</span><b>→</b><span>Audit</span></div></div></div>
+  </div>
+</section>
+
+<section class="pane" id="back" aria-labelledby="backTitle">
+  <div class="page-head"><div><p class="eyebrow">Storage / File management</p><h1 id="backTitle">Backup storage</h1><div class="sub" id="storLoc" style="margin-top:8px">Loading storage configuration…</div></div><button class="btn" id="newBtn"><span class="btn-icon" aria-hidden="true">＋</span> Create backup</button></div>
+  <div class="card table-card"><div class="table-head"><div class="section-title"><h3>Stored files</h3><span class="sub">Create, edit, and remove backup files</span></div></div><div class="tbl"><table id="bkTbl"><thead><tr><th>File</th><th>Size</th><th>Last modified</th><th>SHA-256</th><th>Actions</th></tr></thead><tbody><tr><td colspan="5"><div class="empty-state">Loading backup files…</div></td></tr></tbody></table></div></div>
+</section>
+
+<section class="pane" id="base" aria-labelledby="baseTitle">
+  <div class="page-head"><div><p class="eyebrow">Security / File verification</p><h1 id="baseTitle">Integrity baseline</h1><div class="sub" style="margin-top:8px">Trusted SHA-256 reference hashes used to identify unexpected changes.</div></div><button class="btn ghost" id="baseBtn"><span class="btn-icon" aria-hidden="true">↻</span> Re-create baseline</button></div>
+  <div class="card table-card"><div class="table-head"><div class="section-title"><h3>Trusted file fingerprints</h3><span class="sub">SHA-256</span></div></div><div class="tbl"><table id="baseTbl"><thead><tr><th>File</th><th>Baseline SHA-256</th></tr></thead><tbody></tbody></table></div></div>
+</section>
+
+<section class="pane" id="audit" aria-labelledby="auditTitle">
+  <div class="page-head"><div><p class="eyebrow">Security / Accountability</p><h1 id="auditTitle">Audit trail</h1><div class="sub" style="margin-top:8px">Create, modify, and delete events recorded by the application, newest first.</div></div></div>
+  <div class="card table-card"><div class="table-head"><div class="section-title"><h3>Recorded activity</h3><span class="sub">Identity · action · file integrity</span></div></div><div class="tbl"><table id="auTbl"><thead><tr><th>Time</th><th>User</th><th>Action</th><th>File</th><th>Previous hash</th><th>Current hash</th><th>Status</th></tr></thead><tbody></tbody></table></div></div>
+</section>
+
+<section class="pane" id="log" aria-labelledby="logTitle">
+  <div class="page-head"><div><p class="eyebrow">Security / Event history</p><h1 id="logTitle">Security log</h1><div class="sub" style="margin-top:8px">The latest 200 lines from backup_monitor.log, newest first.</div></div></div>
+  <div class="card"><div class="section-title"><h3>Application events</h3><span class="pill">Plain-text log</span></div><pre id="logBox" aria-label="Security log contents">Loading log entries…</pre></div>
+</section>
+
+<section class="pane" id="about" aria-labelledby="aboutTitle">
+  <div class="page-head"><div><p class="eyebrow">Documentation / System details</p><h1 id="aboutTitle">About BackupGuard</h1><div class="sub" style="margin-top:8px">A local simulation for observing backup health and basic security signals.</div></div></div>
+  <div class="panel-grid"><div class="card"><h2>What this system checks</h2><p>Cloud backups are useful only when they remain available, current, and unchanged. BackupGuard checks a simulated cloud bucket and identifies common backup problems.</p><ul class="about-list"><li><span><strong>Availability</strong> — checks whether each expected backup exists.</span></li><li><span><strong>Freshness</strong> — checks whether files were updated within the maximum age of <strong id="maxAge">24</strong> hours.</span></li><li><span><strong>Integrity</strong> — compares SHA-256 hashes with a trusted baseline.</span></li><li><span><strong>Audit and logging</strong> — records file operations and monitoring events.</span></li></ul><div class="sub">Pipeline</div><div class="flow"><span>Backup storage</span><b>→</b><span>Python monitoring</span><b>→</b><span>Detect problem</span><b>→</b><span>Log / alert</span></div></div>
+  <div class="card"><h2>Scope and limitations</h2><p>This project focuses on monitoring and basic security in a simulated environment. It does not connect to a live cloud provider.</p><ul class="about-list limitations"><li><span>Cloud storage is represented by a local folder.</span></li><li><span>User names are recorded but are not authenticated.</span></li><li><span>Local logs and baselines are not tamper-proof.</span></li><li><span>Modification time alone does not prove that a backup succeeded.</span></li></ul><div style="border-top:1px solid var(--line-soft);padding-top:14px;margin-top:16px"><div class="sub">Project</div><strong style="display:block;margin-top:4px">CSET 462 · Cloud Security and Compliances</strong><div class="sub" style="margin-top:5px">Python-based cloud backup monitoring system</div></div></div></div>
+</section>
+</main>
+</div><!-- /.app-layout -->
+
+<dialog id="dlg" aria-labelledby="dTitle"><div class="dialog-head"><h3 id="dTitle">Backup</h3><div class="dialog-copy" id="dDescription">Manage a stored backup file.</div></div><form id="dlgForm"><div class="dialog-body">
+  <div class="field"><label for="dUser">Username <span class="required-note">Required for audit record</span></label><input id="dUser" placeholder="e.g. admin" autocomplete="username" required></div>
+  <div class="field" id="dNameWrap"><label for="dName">File name</label><input id="dName" placeholder="backup_logs.txt" autocomplete="off"></div>
+  <div class="field" id="dContentWrap"><label for="dContent">File content</label><textarea id="dContent" rows="5" placeholder="Enter backup content…"></textarea></div>
+  <div class="dialog-actions"><button type="button" class="btn ghost" id="dCancel">Cancel</button><button class="btn" id="dOk" type="submit">Save backup</button></div>
+</div></form></dialog>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const $=s=>document.querySelector(s),api=async(u,m='GET',b)=>{const r=await fetch(u,{method:m,headers:{'Content-Type':'application/json'},body:b?JSON.stringify(b):undefined});const j=await r.json();if(!r.ok)throw new Error(j.error||'Request failed');return j};
+const esc=s=>String(s??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function updateClock(){const el=$('#runtimeClock');if(el)el.textContent='LOCAL TIME · '+new Intl.DateTimeFormat(undefined,{hour:'2-digit',minute:'2-digit',second:'2-digit'}).format(new Date())}
+updateClock();setInterval(updateClock,1000);
+const cls=s=>['AVAILABLE','FRESH','INTEGRITY_OK','SUCCESS','HEALTHY'].includes(s)?'ok':(['OUTDATED','NO_BASELINE','WARNING','INVALID_FUTURE_TIMESTAMP'].includes(s)?'warn':'bad');
+const pill=s=>`<span class="pill ${cls(s)}">${esc(s)}</span>`;
+const short=h=>h?`<span class="hash" title="${esc(h)}">${esc(h.slice(0,12))}…${esc(h.slice(-6))}</span>`:'—';
+let tt;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),3000)}
+const empty=(title,detail='')=>`<div class="empty-state"><strong>${esc(title)}</strong>${detail?esc(detail):''}</div>`;
+const load={dash:showReport,back:loadBackups,base:loadBase,audit:loadAudit,log:loadLog,about:()=>{}};
+$('#nav').onclick=e=>{const button=e.target.closest('button[data-p]');if(!button)return;const p=button.dataset.p;document.querySelectorAll('#nav button').forEach(b=>{b.classList.toggle('on',b===button);if(b===button)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});document.querySelectorAll('.pane').forEach(x=>x.classList.toggle('on',x.id===p));load[p]().catch(err=>toast(err.message))};
+
+function render(r){
+  const n=Object.keys(r.availability).length,b=$('#banner'),healthy=r.overall_status==='HEALTHY';
+  b.className='status-banner '+(healthy?'ok':'warn');
+  b.innerHTML=`<span class="status-dot" aria-hidden="true"></span><div><div class="status-title">${healthy?'All monitored backups are healthy':`Monitoring detected ${r.alerts.length} issue${r.alerts.length===1?'':'s'}`}</div><div class="status-detail">Last run ${esc(new Date(r.monitoring_timestamp).toLocaleString())} · ${healthy?'All configured checks passed.':'Review the reported issues below.'}</div></div>`;
+  $('#stats').innerHTML=[
+    ['Overall status',healthy?'Healthy':'Attention',healthy?'All checks passed':'Review alerts','◉',healthy?'ok':'warn'],
+    ['Expected backups',n,'Files tracked by monitoring','▤',''],
+    ['Detected issues',r.alerts.length,r.alerts.length?'Requires review':'No current issues','!',r.alerts.length?'bad':'ok'],
+    ['Maximum backup age',`${r.maximum_backup_age_hours} h`,'Configured freshness threshold','◷','']
+  ].map(([k,v,foot,icon,state])=>`<div class="card stat-card"><div class="stat-label"><span>${k}</span><span class="stat-icon" aria-hidden="true">${icon}</span></div>${state?`<div style="margin-top:14px"><span class="pill ${state}">${esc(v)}</span></div>`:`<strong class="stat">${esc(v)}</strong>`}<div class="stat-foot">${foot}</div></div>`).join('');
+  $('#resTbl tbody').innerHTML=Object.keys(r.availability).map(f=>`<tr><td><span class="file-name">${esc(f)}</span></td><td>${pill(r.availability[f])}</td><td>${pill(r.freshness[f].status)}</td><td>${esc(r.freshness[f].age_hours??'—')}${r.freshness[f].age_hours==null?'':' h'}</td><td>${pill(r.integrity[f])}</td></tr>`).join('')||`<tr><td colspan="5">${empty('No expected backups','Configure backups to start monitoring.')}</td></tr>`;
+  $('#alertCount').className='pill '+(r.alerts.length?'warn':'ok');$('#alertCount').textContent=`${r.alerts.length} issue${r.alerts.length===1?'':'s'}`;
+  $('#alerts').innerHTML=r.alerts.length?`<div class="alert-list">${r.alerts.map(a=>`<div class="alert-item"><div><div class="alert-file">${esc(a.filename)}</div><div class="sub" style="margin-top:4px">${esc(a.issue.replaceAll('_',' ').toLowerCase())}</div></div>${pill(a.issue)}</div>`).join('')}</div>`:`<div class="empty-state" style="padding:24px 8px"><div class="empty-icon" aria-hidden="true">✓</div><strong>Nothing needs attention</strong>All checks are passing for the latest report.</div>`;
+}
+function renderCharts(r){
+  const rows=[];let pass=0,warn=0,fail=0;
+  for(const [name,items] of [['Availability',r.availability],['Freshness',Object.fromEntries(Object.entries(r.freshness).map(([k,v])=>[k,v.status]))],['Integrity',r.integrity]]){
+    const vals=Object.values(items||{});const ok=vals.filter(v=>['AVAILABLE','FRESH','INTEGRITY_OK','SUCCESS','HEALTHY'].includes(typeof v==='string'?v:v?.status)).length;
+    const warning=vals.filter(v=>['OUTDATED','NO_BASELINE','WARNING','INVALID_FUTURE_TIMESTAMP'].includes(typeof v==='string'?v:v?.status)).length;
+    const bad=Math.max(0,vals.length-ok-warning);pass+=ok;warn+=warning;fail+=bad;rows.push({name,total:vals.length,ok,warning,bad});
+  }
+  const total=pass+warn+fail;$('#healthChart').innerHTML=rows.map(x=>{const pct=x.total?100*x.ok/x.total:0;const wp=x.total?100*x.warning/x.total:0;const bp=x.total?100*x.bad/x.total:0;return `<div class="health-row"><span class="health-label">${x.name}</span><div class="health-track" title="${x.ok} passing, ${x.warning} warning, ${x.bad} needs attention"><div style="display:flex;width:100%;height:100%"><span class="health-fill" style="width:${pct}%;background:#4ade80"></span><span class="health-fill" style="width:${wp}%;background:#fbbf24"></span><span class="health-fill" style="width:${bp}%;background:#fb7185"></span></div></div><strong class="health-value">${x.ok}/${x.total}</strong></div>`}).join('')||'<div class="chart-empty">No checks were returned by the latest report.</div>';
+  $('#healthChart').setAttribute('aria-label',`${pass} passing checks, ${warn} warnings, ${fail} checks needing attention`);
+  const max=Number(r.maximum_backup_age_hours)||24;$('#chartMaxAge').textContent=max+' hours';
+  const fresh=Object.entries(r.freshness||{}).slice(0,5);
+  $('#freshnessChart').innerHTML=fresh.length?fresh.map(([name,v])=>{const age=Number(v.age_hours);const known=Number.isFinite(age);const pct=known?Math.max(3,Math.min(100,age/max*100)):0;const state=cls(v.status);return `<div class="fresh-row"><div class="fresh-meta"><span title="${esc(name)}">${esc(name)}</span><strong>${known?esc(age.toFixed(1))+' h':'Unknown'}</strong></div><div class="fresh-track" title="${known?esc(age.toFixed(1))+' of '+max+' hours':'Age unavailable'}"><div class="fresh-fill ${state==='bad'?'bad':state==='warn'?'warn':''}" style="width:${pct}%"></div></div></div>`}).join(''):'<div class="chart-empty">No freshness checks in this report.</div>';
+}
+async function showReport(){const r=await api('/api/report');if(r){render(r);renderCharts(r)}else{$('#banner').className='status-banner';$('#banner').innerHTML='<span class="status-dot" aria-hidden="true"></span><div><div class="status-title">Waiting for first monitoring run</div><div class="status-detail">Run monitoring to evaluate backup availability, freshness, and integrity.</div></div>';$('#healthChart').innerHTML='<div class="chart-empty">Run monitoring to visualize check results.</div>';$('#freshnessChart').innerHTML='<div class="chart-empty">Freshness data appears after a monitoring run.</div>'}}
+$('#runBtn').onclick=async()=>{const b=$('#runBtn');b.disabled=true;b.innerHTML='<span class="btn-icon" aria-hidden="true">↻</span> Checking backups…';try{const report=await api('/api/monitor','POST');render(report);renderCharts(report);toast('Monitoring completed successfully')}catch(e){toast(e.message)}finally{b.disabled=false;b.innerHTML='<span class="btn-icon" aria-hidden="true">↻</span> Run monitoring'}};
+
+async function loadBackups(){
+  const c=await api('/api/config');$('#storLoc').textContent=`${c.expected.length} expected files monitored · Storage: ${c.storage}`;
+  const d=await api('/api/backups');
+  $('#bkTbl tbody').innerHTML=d.map(f=>`<tr><td><span class="file-name">${esc(f.filename)}</span><span class="file-meta">${f.monitored?'Included in monitoring':'Outside expected backup set'}</span></td><td>${esc(f.size)} B</td><td>${esc(new Date(f.modified).toLocaleString())}</td><td>${short(f.sha256)}</td><td style="white-space:nowrap"><button class="btn ghost sm" data-a="edit" data-f="${esc(f.filename)}" aria-label="Modify ${esc(f.filename)}">Modify</button> <button class="btn danger sm" data-a="del" data-f="${esc(f.filename)}" aria-label="Delete ${esc(f.filename)}">Delete</button></td></tr>`).join('')||`<tr><td colspan="5">${empty('Storage is empty','Create a .txt backup file to get started.')}</td></tr>`;
+}
+async function loadBase(){const d=await api('/api/baseline');$('#baseTbl tbody').innerHTML=Object.entries(d).map(([f,h])=>`<tr><td><span class="file-name">${esc(f)}</span></td><td>${short(h)}</td></tr>`).join('')||`<tr><td colspan="2">${empty('No baseline recorded','Create a baseline to establish trusted file hashes.')}</td></tr>`}
+async function loadAudit(){const d=await api('/api/audit');$('#auTbl tbody').innerHTML=d.map(e=>`<tr><td>${esc(new Date(e.timestamp).toLocaleString())}</td><td>${esc(e.username)}</td><td>${pill(e.action)}</td><td><span class="file-name">${esc(e.filename)}</span></td><td>${short(e.previous_hash)}</td><td>${short(e.current_hash)}</td><td>${pill(e.status)}</td></tr>`).join('')||`<tr><td colspan="7">${empty('No audit events yet','File operations will be recorded here.')}</td></tr>`}
+async function loadLog(){$('#logBox').textContent=(await api('/api/log')).join('\n')||'No log entries recorded yet.'}
+$('#baseBtn').onclick=async()=>{if(!confirm('Trust the current files as the new integrity baseline?'))return;const b=$('#baseBtn');b.disabled=true;try{await api('/api/baseline','POST');await loadBase();toast('Integrity baseline re-created')}catch(e){toast(e.message)}finally{b.disabled=false}};
+
+let mode,target;const dlg=$('#dlg');
+function openDlg(m,f=''){mode=m;target=f;$('#dTitle').textContent=m==='new'?'Create backup':m==='edit'?'Modify backup':'Delete backup';$('#dDescription').textContent=m==='new'?'Add a .txt file to the simulated cloud storage.':m==='edit'?`Update the content stored in ${f}.`:`This permanently removes ${f} from the simulated storage.`;
+  $('#dNameWrap').style.display=m==='new'?'':'none';$('#dContentWrap').style.display=m==='del'?'none':'';$('#dName').required=m==='new';$('#dContent').required=m!=='del';$('#dName').value='';$('#dContent').value='';$('#dUser').value='';$('#dOk').textContent=m==='del'?'Delete backup':m==='new'?'Create backup':'Save changes';$('#dOk').className='btn'+(m==='del'?' danger':'');
+  dlg.showModal();if(m==='edit'){api('/api/backups/'+encodeURIComponent(f)).then(x=>{if(dlg.open&&mode==='edit'&&target===f)$('#dContent').value=x.content}).catch(err=>{toast(err.message);dlg.close()})}else if(m==='new')$('#dName').focus();else $('#dUser').focus()}
+$('#newBtn').onclick=()=>openDlg('new');$('#dCancel').onclick=()=>dlg.close();
+$('#bkTbl').onclick=e=>{const button=e.target.closest('button[data-a]');if(button)openDlg(button.dataset.a,button.dataset.f)};
+$('#dlgForm').onsubmit=async e=>{e.preventDefault();const u=$('#dUser').value.trim(),c=$('#dContent').value,b=$('#dOk');if(!u){toast('Enter a username for the audit record.');$('#dUser').focus();return}b.disabled=true;try{if(mode==='new')await api('/api/backups','POST',{username:u,filename:$('#dName').value.trim(),content:c});else if(mode==='edit')await api('/api/backups/'+encodeURIComponent(target),'PUT',{username:u,content:c});else await api('/api/backups/'+encodeURIComponent(target),'DELETE',{username:u});dlg.close();toast('Operation completed and recorded in the audit trail.');await loadBackups()}catch(err){toast(err.message)}finally{b.disabled=false}};
+api('/api/config').then(c=>{$('#maxAge').textContent=c.max_age_hours;$('#chartMaxAge').textContent=c.max_age_hours+' hours'}).catch(err=>toast(err.message));showReport().catch(err=>toast(err.message));
+</script>
+</body>
+</html>

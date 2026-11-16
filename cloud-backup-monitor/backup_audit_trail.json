@@ -1,0 +1,11 @@
+[
+    {
+        "timestamp": "2026-11-16T16:36:16+05:30",
+        "username": "admin",
+        "action": "MODIFY",
+        "filename": "backup_config.txt",
+        "previous_hash": "b1329822861e06cd5a2162404bd2ff3c93670037156dbfed65aaa842dd7818d0",
+        "current_hash": "68b2f0d0a4e3f52e227f6ed80b9844c9af0e79e3747fe907a44201429ecef3ca",
+        "status": "SUCCESS"
+    }
+]
